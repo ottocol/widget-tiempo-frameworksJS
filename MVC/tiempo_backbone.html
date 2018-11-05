@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Ejemplo del widget del tiempo en Backbone</title>
+</head>
+<body>
+<div id="widget"></div>
+
+<script type="text/template" id="template">
+	<h2>El estado del tiempo</h2>
+	<input type="text" id="localidad_buscada">
+	<button id="boton_buscar">Ver tiempo</button> 
+	<div id="datosTiempo" >
+		<div id="estado" style="font-size:2em;padding-top:0.5em"></div>
+		<img id="icono" style="width:150px" src="">
+	</div>
+		
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.2.3/backbone-min.js"></script>
+
+<script>
+   var BASE_URL = 'http://api.openweathermap.org/data/2.5/weather?APPID=1adb13e22f23c3de1ca37f3be90763a9&units=metric&lang=es&q='
+   var BASE_ICON_URL = 'http://openweathermap.org/img/w/'	
+   
+   console.log('hola backbone');
+
+   var DatosTiempo = Backbone.Model.extend({
+   		actualizar: function() {
+   			fetch(BASE_URL+this.get('localidad'))
+			  .then(function(respuesta){
+				  if (respuesta.ok)
+				  	return respuesta.json()
+				  else throw new Error("La localidad no se encuentra")
+			  }).then((datos)=>{
+					this.set('estado', datos.weather[0].description);
+   					this.set('icono', BASE_ICON_URL + datos.weather[0].icon + '.png');
+   					this.set('temp', datos.main.temp);
+   					this.set('dt', datos.dt)
+			  }).catch(function(error){
+				  alert(error.message)
+			  })
+   		}
+   });
+
+   var VistaTiempo = Backbone.View.extend({
+   	 el: '#widget',
+   	 render: function() {
+   	 	this.el.innerHTML = document.getElementById('template').innerHTML
+   	 },
+   	 renderData: function() {
+   	 	document.getElementById('estado').innerHTML = this.model.get('estado');
+   	    document.getElementById('icono').src = this.model.get('icono')
+	 },
+   	 events: {
+   	 	'click #boton_buscar': 'obtenerDatos'
+   	 },
+   	 obtenerDatos : function() {
+   	 	console.log('obtener datos');
+   	 	this.model.set('localidad', this.el.querySelector('#localidad_buscada').value)
+   	 	this.model.actualizar();
+   	 },
+   	 initialize: function() {
+   	 	console.log('vista inicializada');
+   	 	this.listenTo(this.model, 'change:dt', this.renderData);
+   	 }
+   });
+
+   var vt = new VistaTiempo({model: new DatosTiempo()})
+   vt.render()
+</script>
+</body>
+</html>

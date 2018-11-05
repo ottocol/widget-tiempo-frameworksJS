@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html ng-app="tiempoApp">
+<head>
+	<title>Ejemplo de consulta del tiempo en AngularJS</title>
+	<style>
+	[ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .x-ng-cloak {
+    	display: none !important;
+     }
+     .titulo {font-size: 3em;}
+	</style>
+</head>
+<body ng-controller="tiempoCtrl as tiempo">
+	<div id="datosTiempo" ng-cloak>
+		<div class="titulo">{{localidad}}</div>
+		<div></div>
+		<div>{{estado}}</div>
+	</div>
+    <input type="text" ng-model="localidad">
+ 	<button ng-click="tiempo.obtenerDatos()">Ver tiempo</button>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.7/angular.min.js"></script>
+	<script>
+    var BASE_URL = 'http://api.openweathermap.org/data/2.5/weather?APPID=1adb13e22f23c3de1ca37f3be90763a9&units=metric&lang=es&q='	
+    var BASE_ICON_URL = 'http://openweathermap.org/img/w/'	
+ 
+	var tiempoApp = angular.module('tiempoApp', []);
+	tiempoApp.controller('tiempoCtrl', function ($scope, $http) {
+
+		this.obtenerDatos = function() {
+			$http.get(BASE_URL+$scope.localidad)
+				.success(function(data){
+					$scope.estado = data.weather[0].description;
+				})
+
+		}
+	});
+	</script>
+</body>
+</html>
